@@ -25,7 +25,7 @@ jobs:
       - name: Build static site
         run: npm run build
 
-      - name: Copy files via SCP
+      - name: Deploy to server via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -37,7 +37,109 @@ jobs:
           strip_components: 1
           overwrite: true
 
-      - name: Show deployed files
+      - name: Setup SSL certificate (Let's Encrypt)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Install certbot if not exists
+            if ! command -v certbot &> /dev/null; then
+              echo "Installing certbot..."
+              sudo apt-get update
+              sudo apt-get install -y certbot python3-certbot-nginx
+            fi
+            
+            # Stop nginx if running (for standalone cert)
+            sudo systemctl stop nginx 2>/dev/null || true
+            
+            # Get SSL certificate
+            DOMAIN="${{ secrets.DOMAIN }}"
+            EMAIL="${{ secrets.EMAIL }}"
+            
+            sudo certbot certonly --standalone -d "$DOMAIN" --agree-tos --email "$EMAIL" --keep-until-expiring || true
+            
+            # Create nginx config
+            sudo tee /etc/nginx/sites-available/superclaw > /dev/null << 'EOF'
+            server {
+                listen 80;
+                listen [::]:80;
+                server_name superclaw.opencaio.cn;
+                
+                root /var/www/superclaw101;
+                index index.html;
+                
+                location / {
+                    try_files $uri $uri/ /index.html;
+                }
+                
+                # Cache static assets
+                location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
+                    expires 1y;
+                    add_header Cache-Control "public, immutable";
+                }
+            }
+            EOF
+            
+            # Create HTTPS config
+            sudo tee /etc/nginx/sites-available/superclaw-ssl > /dev/null << 'EOF'
+            server {
+                listen 80;
+                listen [::]:80;
+                server_name superclaw.opencaio.cn;
+                return 301 https://$server_name$request_uri;
+            }
+            
+            server {
+                listen 443 ssl http2;
+                listen [::]:443 ssl http2;
+                server_name superclaw.opencaio.cn;
+                
+                ssl_certificate /etc/letsencrypt/live/superclaw.opencaio.cn/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/superclaw.opencaio.cn/privkey.pem;
+                ssl_session_timeout 1d;
+                ssl_session_cache shared:SSL:50m;
+                ssl_session_tickets off;
+                
+                # Modern SSL configuration
+                ssl_protocols TLSv1.2 TLSv1.3;
+                ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
+                ssl_prefer_server_ciphers off;
+                
+                # HSTS
+                add_header Strict-Transport-Security "max-age=63072000" always;
+                
+                root /var/www/superclaw101;
+                index index.html;
+                
+                location / {
+                    try_files $uri $uri/ /index.html;
+                }
+                
+                # Cache static assets
+                location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
+                    expires 1y;
+                    add_header Cache-Control "public, immutable";
+                }
+            }
+            EOF
+            
+            # Enable site
+            sudo ln -sf /etc/nginx/sites-available/superclaw-ssl /etc/nginx/sites-enabled/
+            
+            # Test nginx config
+            sudo nginx -t
+            
+            # Restart nginx
+            sudo systemctl restart nginx
+            
+            echo "=== SSL and Nginx configured ==="
+            echo "Certificate status:"
+            sudo certbot certificates 2>/dev/null || true
+
+      - name: Verify deployment
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -46,6 +148,13 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "=== Deployed files ==="
-            ls -la ${{ secrets.DEPLOY_PATH }}
+            ls -la /var/www/superclaw101/
+            echo ""
             echo "=== File count ==="
-            find ${{ secrets.DEPLOY_PATH }} -type f | wc -l
+            find /var/www/superclaw101 -type f | wc -l
+            echo ""
+            echo "=== Nginx status ==="
+            sudo systemctl status nginx --no-pager | head -5
+            echo ""
+            echo "=== SSL certificate ==="
+            sudo certbot certificates 2>/dev/null | grep -A5 "Certificate Name" || echo "No certificate found"

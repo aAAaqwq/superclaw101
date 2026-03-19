@@ -1,0 +1,176 @@
+---
+/**
+ * TerminalDemo — Animated typewriter terminal
+ * Shows OpenClaw commands being typed in real-time
+ */
+---
+
+<div class="terminal-demo">
+  <div class="terminal-chrome">
+    <span class="terminal-dot red"></span>
+    <span class="terminal-dot yellow"></span>
+    <span class="terminal-dot green"></span>
+    <span class="terminal-title">superclaw@ai-army ~ </span>
+  </div>
+  <div class="terminal-body">
+    <div class="terminal-line" data-delay="0">
+      <span class="prompt">$</span>
+      <span class="cmd" data-text="openclaw dispatch --agents 13 --task &quot;build website&quot;"></span>
+    </div>
+    <div class="terminal-line output" data-delay="2200">
+      <span class="output-text">⚡ CEO 正在向 6 个 Agent 分发任务...</span>
+    </div>
+    <div class="terminal-line output" data-delay="3400">
+      <span class="output-text">✅ 49 页面构建完成，耗时 2.63s — 0 错误</span>
+    </div>
+    <div class="terminal-line" data-delay="4800">
+      <span class="prompt">$</span>
+      <span class="cmd" data-text="openclaw skills --count"></span>
+    </div>
+    <div class="terminal-line output" data-delay="6600">
+      <span class="output-text">📦 447 个 Skills，覆盖 13 大类</span>
+    </div>
+    <div class="terminal-line" data-delay="7800">
+      <span class="prompt">$</span>
+      <span class="cmd" data-text="openclaw status"></span>
+    </div>
+    <div class="terminal-line output" data-delay="9600">
+      <span class="output-text">🟢 13 个 Agent 在线 · 10 个渠道已连接 · 7×24 运行中</span>
+    </div>
+    <div class="terminal-line" data-delay="10800">
+      <span class="prompt">$</span>
+      <span class="cursor">▊</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  function animateTerminal() {
+    const lines = document.querySelectorAll('.terminal-line');
+    lines.forEach(line => {
+      const el = line as HTMLElement;
+      const delay = parseInt(el.dataset.delay || '0', 10);
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(4px)';
+
+      setTimeout(() => {
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+
+        // Typewriter effect for command spans
+        const cmd = el.querySelector('.cmd') as HTMLElement;
+        if (cmd) {
+          const text = cmd.dataset.text || '';
+          cmd.textContent = '';
+          let i = 0;
+          const type = () => {
+            if (i < text.length) {
+              cmd.textContent += text[i];
+              i++;
+              setTimeout(type, 35 + Math.random() * 25);
+            }
+          };
+          type();
+        }
+      }, delay);
+    });
+  }
+
+  // Intersection Observer — only animate when visible
+  const terminal = document.querySelector('.terminal-demo');
+  if (terminal) {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { animateTerminal(); obs.disconnect(); } });
+    }, { threshold: 0.3 });
+    obs.observe(terminal);
+  }
+</script>
+
+<style>
+  .terminal-demo {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(88, 166, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(88, 166, 255, 0.05);
+    max-width: 620px;
+    margin: 0 auto;
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    background: #0d1117;
+  }
+
+  .terminal-chrome {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    background: #161b22;
+    border-bottom: 1px solid rgba(88, 166, 255, 0.1);
+  }
+
+  .terminal-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+  }
+  .terminal-dot.red { background: #ff5f57; }
+  .terminal-dot.yellow { background: #febc2e; }
+  .terminal-dot.green { background: #28c840; }
+
+  .terminal-title {
+    margin-left: 8px;
+    color: #8b949e;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .terminal-body {
+    padding: 16px 18px;
+    min-height: 200px;
+  }
+
+  .terminal-line {
+    margin-bottom: 4px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .prompt {
+    color: #28c840;
+    margin-right: 8px;
+    font-weight: 700;
+  }
+
+  .cmd {
+    color: #e6edf3;
+  }
+
+  .output-text {
+    color: #8b949e;
+  }
+
+  .terminal-line.output .output-text {
+    color: #58a6ff;
+  }
+
+  .cursor {
+    color: #58a6ff;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  @media (max-width: 640px) {
+    .terminal-demo {
+      font-size: 0.72rem;
+      max-width: 100%;
+    }
+    .terminal-body {
+      padding: 12px;
+      min-height: 160px;
+    }
+  }
+</style>

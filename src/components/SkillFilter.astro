@@ -1,0 +1,41 @@
+---
+/**
+ * SkillFilter — Live search/filter for skill tables
+ * Drop into any SkillsHub category page
+ */
+---
+
+<div class="skill-filter">
+  <input type="text" id="skill-search" placeholder="🔍 Filter skills... (type to search)" autocomplete="off" />
+</div>
+
+<script>
+  function initFilter() {
+    const input = document.getElementById('skill-search') as HTMLInputElement;
+    if (!input) return;
+
+    // Find the nearest table after the filter
+    const table = input.closest('.skill-filter')?.nextElementSibling?.tagName === 'TABLE'
+      ? input.closest('.skill-filter')?.nextElementSibling as HTMLTableElement
+      : document.querySelector('table') as HTMLTableElement;
+    
+    if (!table) return;
+
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    
+    input.addEventListener('input', () => {
+      const q = input.value.toLowerCase().trim();
+      rows.forEach(row => {
+        const text = (row as HTMLElement).textContent?.toLowerCase() || '';
+        (row as HTMLElement).style.display = !q || text.includes(q) ? '' : 'none';
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFilter);
+  } else {
+    initFilter();
+  }
+  document.addEventListener('astro:page-load', initFilter);
+</script>

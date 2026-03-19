@@ -1,0 +1,102 @@
+---
+import Default from '@astrojs/starlight/components/Footer.astro';
+const isEnglish = Astro.url.pathname.startsWith('/en');
+---
+
+<Default {...Astro.props}><slot /></Default>
+
+<footer class="kh-footer">
+  <div class="kh-footer-inner">
+    <div class="kh-footer-grid">
+      <div class="kh-footer-contact">
+        <h3>{isEnglish ? '📬 Contact' : '📬 联系方式'}</h3>
+        <p>📞 {isEnglish ? 'Phone' : '电话'}: <a href="tel:19234803740">19234803740</a></p>
+        <p>💬 QQ: <code>2067089451</code></p>
+        <p>💬 {isEnglish ? 'WeChat' : '微信'}: <code>aa_2067089451</code></p>
+        <img src="/images/wechat-qr.jpg" alt="WeChat QR Code" width="140" height="140" loading="lazy" />
+      </div>
+      <div class="kh-footer-links">
+        <h3>{isEnglish ? '🔗 Links' : '🔗 相关链接'}</h3>
+        <ul>
+          <li><a href="https://github.com/aAAaqwq/AGI-Super-Team" target="_blank">🌟 AGI-Super-Team（447 Skills + 13 Agents）</a></li>
+          <li><a href="https://github.com/openclaw/openclaw" target="_blank">OpenClaw GitHub</a></li>
+          <li><a href="https://discord.com/invite/clawd" target="_blank">Discord {isEnglish ? 'Community' : '社区'}</a></li>
+          <li><a href="https://clawhub.com" target="_blank">ClawdHub {isEnglish ? 'Skill Marketplace' : '技能市场'}</a></li>
+        </ul>
+      </div>
+      <div class="kh-footer-about">
+        <h3>{isEnglish ? '🚀 About' : '🚀 关于'}</h3>
+        <p><strong>AGI-Super-Team</strong> — {isEnglish
+          ? 'The largest open-source AI Agent Skill ecosystem.'
+          : '最大的开源 AI Agent Skill 生态。'}</p>
+        <p>{isEnglish
+          ? '447+ reusable Skills · 13 specialized Agents · Covering dev, marketing, trading, ops, and more.'
+          : '447+ 可复用 Skills · 13 个专业 Agent · 覆盖开发、营销、交易、运维等领域。'}</p>
+        <p style="margin-top: 0.5rem;"><em>{isEnglish
+          ? "Built by Daniel's AI Super Team — 13 Agents Working 24/7"
+          : '由 Daniel 的 AI 超级团队打造 — 13 个 Agent 7×24 运转'}</em></p>
+      </div>
+    </div>
+    <div class="kh-footer-bottom">
+      <p>© 2026 SuperClaw101 · Powered by <strong>Daniel Li & AI Team</strong> · Built with <a href="https://starlight.astro.build" target="_blank">Starlight</a></p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .kh-footer {
+    border-top: 1px solid var(--sl-color-gray-5);
+    background: var(--sl-color-bg-nav);
+    padding: 2rem 1rem;
+    margin-top: 3rem;
+  }
+  .kh-footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .kh-footer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  @media (max-width: 768px) {
+    .kh-footer-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  }
+  .kh-footer h3 {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    color: var(--sl-color-white);
+  }
+  .kh-footer p, .kh-footer li {
+    margin: 0.3rem 0;
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-2);
+  }
+  .kh-footer ul { list-style: none; padding: 0; margin: 0; }
+  .kh-footer a {
+    color: var(--sl-color-text-accent);
+    text-decoration: none;
+  }
+  .kh-footer a:hover { text-decoration: underline; }
+  .kh-footer code {
+    background: var(--sl-color-gray-6);
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    font-size: 0.85em;
+  }
+  .kh-footer img {
+    margin-top: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--sl-color-gray-5);
+  }
+  .kh-footer-bottom {
+    text-align: center;
+    border-top: 1px solid var(--sl-color-gray-5);
+    padding-top: 1rem;
+  }
+  .kh-footer-bottom p {
+    font-size: 0.8rem;
+    color: var(--sl-color-gray-3);
+  }
+</style>

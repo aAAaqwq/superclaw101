@@ -1,0 +1,350 @@
+/* SuperClaw101 — Custom Styles */
+/* ===== Design Tokens ===== */
+:root {
+  --sc-accent: #58a6ff;
+  --sc-accent-2: #a78bfa;
+  --sc-accent-glow: rgba(88, 166, 255, 0.15);
+  --sc-accent-glow-strong: rgba(88, 166, 255, 0.25);
+  --sc-dark: #0d1117;
+  --sc-dark-2: #161b22;
+  --sc-dark-3: #1c2128;
+  --sc-gray: #8b949e;
+  --sc-border: rgba(88, 166, 255, 0.15);
+  --sc-radius: 14px;
+}
+
+:root[data-theme='dark'] {
+  --sl-color-bg: var(--sc-dark);
+  --sl-color-bg-nav: var(--sc-dark-2);
+}
+
+/* ===== Hero — works with Vanta.js particle background ===== */
+.hero {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== Platform badge ===== */
+.hero-platforms {
+  text-align: center;
+  padding: 0.75rem 1.5rem;
+  background: var(--sc-accent-glow);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  font-size: 0.9rem;
+  margin: 1.5rem auto 2rem;
+  max-width: 700px;
+  backdrop-filter: blur(8px);
+}
+
+/* ===== Metrics grid ===== */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+@media (max-width: 768px) {
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.metric-card {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  border-radius: var(--sc-radius);
+  background: linear-gradient(135deg, var(--sc-dark-2), rgba(88, 166, 255, 0.05));
+  border: 1px solid var(--sc-border);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.metric-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(88, 166, 255, 0.12);
+}
+
+.metric-number {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--sc-accent), var(--sc-accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+.metric-label {
+  font-size: 0.9rem;
+  color: var(--sc-gray);
+  margin-top: 0.25rem;
+}
+
+/* ===== Org Chart ===== */
+.org-chart {
+  text-align: center;
+  margin: 2rem 0;
+  padding: 2rem 1rem;
+}
+
+.org-ceo {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  background: linear-gradient(135deg, var(--sc-accent), var(--sc-accent-2));
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(88, 166, 255, 0.3);
+}
+
+.org-line {
+  width: 2px;
+  height: 30px;
+  background: var(--sc-border);
+  margin: 0 auto;
+}
+
+.org-depts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 0;
+}
+@media (max-width: 768px) {
+  .org-depts { grid-template-columns: repeat(2, 1fr); }
+}
+
+.org-dept {
+  padding: 1rem 0.75rem;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-border);
+  background: var(--sc-dark-2);
+  position: relative;
+}
+.org-dept::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 16px;
+  background: var(--sc-border);
+}
+
+.org-dept-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+}
+.org-agents {
+  font-size: 0.8rem;
+  color: var(--sc-gray);
+}
+
+.org-dept.eng { border-color: rgba(40, 200, 64, 0.3); }
+.org-dept.mkt { border-color: rgba(255, 165, 0, 0.3); }
+.org-dept.data { border-color: rgba(88, 166, 255, 0.3); }
+.org-dept.mgmt { border-color: rgba(167, 139, 250, 0.3); }
+
+/* ===== Army stats ===== */
+.army-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+@media (max-width: 768px) {
+  .army-stats { grid-template-columns: repeat(2, 1fr); }
+}
+.army-stat {
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: var(--sc-accent-glow);
+  border: 1px solid var(--sc-border);
+  font-size: 0.9rem;
+}
+
+/* ===== Case Study card grid ===== */
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.case-card {
+  display: block;
+  padding: 1.25rem;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-border);
+  background: linear-gradient(135deg, var(--sc-dark-2), var(--sc-dark-3));
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.case-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(88, 166, 255, 0.12);
+  border-color: var(--sc-accent);
+  text-decoration: none;
+  color: inherit;
+}
+
+.case-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+.case-title {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  color: var(--sl-color-white);
+}
+.case-meta {
+  font-size: 0.8rem;
+  color: var(--sc-gray);
+}
+
+/* ===== SkillsHub category grid ===== */
+.skillshub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.skill-cat-card {
+  display: block;
+  text-align: center;
+  padding: 1.25rem 0.75rem;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-border);
+  background: var(--sc-dark-2);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.skill-cat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(88, 166, 255, 0.1);
+  border-color: var(--sc-accent);
+  text-decoration: none;
+  color: inherit;
+}
+
+.skill-cat-icon {
+  font-size: 2rem;
+  margin-bottom: 0.4rem;
+}
+.skill-cat-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--sl-color-white);
+}
+.skill-cat-count {
+  font-size: 0.8rem;
+  color: var(--sc-gray);
+  margin-top: 0.15rem;
+}
+
+/* ===== CTA buttons ===== */
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 2rem 0;
+}
+
+.cta-primary,
+.cta-secondary {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.cta-primary {
+  background: linear-gradient(135deg, var(--sc-accent), var(--sc-accent-2));
+  color: #fff;
+}
+.cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(88, 166, 255, 0.3);
+  color: #fff;
+}
+.cta-secondary {
+  background: transparent;
+  border: 1px solid rgba(88, 166, 255, 0.3);
+  color: var(--sl-color-text);
+}
+.cta-secondary:hover {
+  border-color: var(--sc-accent);
+  background: var(--sc-accent-glow);
+  transform: translateY(-2px);
+}
+
+/* ===== Team badge ===== */
+.team-badge {
+  text-align: center;
+  padding: 1rem 2rem;
+  margin: 2rem auto;
+  max-width: 500px;
+  border-radius: 12px;
+  background: var(--sc-accent-glow);
+  border: 1px solid var(--sc-border);
+  font-size: 0.95rem;
+}
+.team-badge a { color: var(--sc-accent); }
+
+/* ===== Feature cards glow ===== */
+.card {
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(88, 166, 255, 0.08);
+}
+
+/* ===== Tables ===== */
+table { width: 100%; }
+th { background: var(--sc-dark-2); }
+
+/* ===== Code blocks ===== */
+pre {
+  border: 1px solid rgba(88, 166, 255, 0.1);
+  border-radius: 10px;
+}
+
+/* ===== SkillsHub search filter ===== */
+.skill-filter {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.skill-filter input {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--sc-border);
+  background: var(--sc-dark-2);
+  color: var(--sl-color-text);
+  font-size: 0.9rem;
+  outline: none;
+}
+.skill-filter input:focus {
+  border-color: var(--sc-accent);
+  box-shadow: 0 0 0 2px var(--sc-accent-glow);
+}
+.skill-filter input::placeholder {
+  color: var(--sc-gray);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  .metric-number { font-size: 1.8rem; }
+  .cta-buttons { flex-direction: column; align-items: center; }
+  .org-depts { grid-template-columns: 1fr 1fr; }
+  .army-stats { grid-template-columns: 1fr 1fr; }
+}
