@@ -1,0 +1,92 @@
+name: Deploy Static Site
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-static-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      APP_ROOT: /var/www/superclaw101
+      APP_DOMAIN: superclaw.opencaio.cn
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static site
+        run: npm run build
+
+      - name: Compute release id
+        id: release
+        run: echo "release_id=$(date +%Y%m%d%H%M%S)-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare remote upload directory
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -eu
+            mkdir -p "${{ env.APP_ROOT }}/releases" "${{ env.APP_ROOT }}/shared" "/tmp/superclaw101"
+            rm -rf "/tmp/superclaw101/${{ steps.release.outputs.release_id }}"
+            mkdir -p "/tmp/superclaw101/${{ steps.release.outputs.release_id }}/dist"
+
+      - name: Upload build artifacts and deploy scripts
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "dist/*,scripts/deploy-release.sh,scripts/verify-deploy.sh"
+          target: "/tmp/superclaw101/${{ steps.release.outputs.release_id }}"
+          strip_components: 0
+          overwrite: true
+
+      - name: Activate release
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -eu
+            chmod +x "/tmp/superclaw101/${{ steps.release.outputs.release_id }}/scripts/deploy-release.sh"
+            APP_ROOT="${{ env.APP_ROOT }}" \
+            RELEASE_ID="${{ steps.release.outputs.release_id }}" \
+            UPLOAD_ROOT="/tmp/superclaw101/${{ steps.release.outputs.release_id }}" \
+            bash "/tmp/superclaw101/${{ steps.release.outputs.release_id }}/scripts/deploy-release.sh"
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -eu
+            chmod +x "/tmp/superclaw101/${{ steps.release.outputs.release_id }}/scripts/verify-deploy.sh"
+            APP_ROOT="${{ env.APP_ROOT }}" \
+            APP_DOMAIN="${{ env.APP_DOMAIN }}" \
+            EXPECT_RELEASE_ID="${{ steps.release.outputs.release_id }}" \
+            bash "/tmp/superclaw101/${{ steps.release.outputs.release_id }}/scripts/verify-deploy.sh"

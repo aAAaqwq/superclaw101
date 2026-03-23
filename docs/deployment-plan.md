@@ -321,11 +321,11 @@ systemctl reload nginx
 2. 域名/DNS/证书状态未实测
    - 当前无法把 `https://superclaw.opencaio.cn` 当作已上线事实来承诺
 
-3. workflow 仍待拆分
-   - 当前仓库内的 `deploy.yml` 仍是“初始化 + 日常部署”耦合版
+3. workflow 已拆分，但仍待真实环境验证
+   - 当前仓库内已拆为 `.github/workflows/server-bootstrap.yml` 与 `.github/workflows/deploy-static.yml`
 
-4. 需要补 server-side deploy artifacts
-   - 例如独立 nginx 配置样例、发布脚本、verify checklist
+4. server-side deploy artifacts 已补齐，但仍待实机验证
+   - 已补 `ops/nginx/superclaw.opencaio.cn.conf`、`scripts/deploy-release.sh`、`scripts/verify-deploy.sh`
 
 ---
 
@@ -334,11 +334,11 @@ systemctl reload nginx
 建议下一轮继续做这三件事中的一个最小闭环：
 
 1. **拆 workflow**
-   - `server-bootstrap.yml`（低频）
-   - `deploy-static-site.yml`（高频）
+   - `.github/workflows/server-bootstrap.yml`（低频）
+   - `.github/workflows/deploy-static.yml`（高频）
 
 2. **补部署产物**
-   - `ops/nginx/superclaw.conf`
+   - `ops/nginx/superclaw.opencaio.cn.conf`
    - `scripts/deploy-release.sh`
    - `scripts/verify-deploy.sh`
 
