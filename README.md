@@ -1,23 +1,38 @@
 # SuperClaw101 🌟
 
-> OpenClaw Knowledge Hub - AI Agent 知识库静态站点
+> OpenClaw 正式静态文档站 / 知识站
 
-[OpenClaw](https://github.com/openclaw/openclaw) 的官方文档与知识库，基于 Astro + Starlight 构建。
+[OpenClaw](https://github.com/openclaw/openclaw) 的文档与知识内容站点，基于 Astro + Starlight 构建。
+当前阶段重点是沉淀结构化文档内容、建立统一的信息架构，并提供稳定的静态站点阅读体验。
+项目当前产品定位明确为正式静态文档站 / 知识站，而非交互型 Agent 产品或在线聊天应用。
 
-## ✨ 特性
+## 🎯 当前阶段范围
 
-- 📚 基于 Starlight 的现代化文档站点
-- 🌐 中英双语支持
-- 🔍 内置全文搜索 (Pagefind)
-- 📱 响应式设计
-- 🚀 自动 CI/CD 部署
+当前阶段聚焦于把项目建设为一个正式、可维护的静态文档站 / 知识站，主要包含：
+
+- 📚 基于 Starlight 的文档内容组织与展示
+- 🌐 中英双语内容承载能力
+- 🔍 静态站内搜索能力（如 Pagefind）
+- 📱 响应式阅读体验
+- 🧱 面向文档生产与发布的基础构建流程
+
+## 🚫 非本阶段范围
+
+以下方向属于 future plan / 后续规划，不作为当前阶段的已交付能力，也不应被理解为当前站点定位：
+
+- Agent Demo 的交互体验打磨与产品化
+- Chat Widget 集成与在线对话能力
+- Demo 产品化、业务闭环与对外展示页面扩展
+- 将部署链路、证书、域名访问包装为“默认已就绪”的线上服务承诺
 
 ## 🛠️ 技术栈
 
+> 当前仓库以静态内容承载、文档编排与站点发布为主；涉及 Agent Demo、Chat Widget、在线交互能力的内容，仅作为后续演进方向，不构成当前版本定位。
+
 - **框架**: [Astro](https://astro.build) + [Starlight](https://starlight.astro.build)
 - **样式**: Tailwind CSS
-- **部署**: GitHub Actions → Nginx
-- **SSL**: Let's Encrypt / Cloudflare Origin Certificate
+- **站点形态**: 静态文档站 / 知识站
+- **部署形态**: 可对接 CI/CD、静态文件托管与反向代理方案（按环境配置）
 
 ## 🚀 快速开始
 
@@ -39,52 +54,42 @@ npm run preview
 
 ## 📦 部署
 
-### GitHub Secrets
+部署部分仅描述推荐方向与前提条件，不代表当前仓库已经默认完成服务器、证书、域名或自动化发布配置。
+如需落地线上部署，需要先补齐目标环境、访问域名、CI/CD 凭据、反向代理与证书策略等条件。
 
-在 GitHub 仓库设置中添加以下 Secrets:
+### 前提条件
 
-| Secret | 值 | 说明 |
-|--------|-----|------|
-| SSH_HOST | 8.138.59.152 | 服务器 IP |
-| SSH_USER | root | SSH 用户名 |
-| SSH_PORT | 22 | SSH 端口 |
-| SSH_PRIVATE_KEY | - | SSH 私钥 |
-| DEPLOY_PATH | /var/www/superclaw101 | 部署路径 |
-| DOMAIN | superclaw.opencaio.cn | 域名 |
-| EMAIL | - | SSL 证书邮箱 |
+在准备部署前，通常需要具备以下条件：
 
-### 部署流程
+| 项目 | 说明 |
+|------|------|
+| 目标环境 | 可用的静态文件托管环境、服务器或对象存储/CDN |
+| 域名与 DNS | 已规划访问域名，并完成 DNS 指向 |
+| CI/CD 凭据 | 如需自动化发布，需配置对应平台所需的密钥或访问凭据 |
+| 反向代理 / HTTPS | 如需自建服务器访问，需要自行完成 Nginx、HTTPS 证书或等效方案配置 |
 
-1. **Push** 到 `main` 分支触发自动部署
-2. **构建** Astro 静态站点
-3. **SCP** 部署到服务器
-4. **SSL** 自动配置 Let's Encrypt 证书
-5. **Nginx** 配置 HTTPS 反向代理
+### 可选部署方式
 
-### 手动部署
+- **CI/CD 发布**：可结合 GitHub Actions 等流程，在满足凭据与目标环境条件后执行自动化构建与发布
+- **手动部署**：本地构建后，将静态产物上传到目标环境
+- **托管平台 / 自建环境**：可根据实际运维条件选择静态托管、对象存储 + CDN 或 Nginx 等方案
+
+### 手动部署示例
 
 ```bash
 # 构建
 npm run build
 
-# 打包
-zip -r dist.zip dist/*
-
-# 上传服务器
-scp dist.zip root@8.138.59.152:/tmp/
-
-# 服务器端解压
-ssh root@8.138.59.152 "mkdir -p /var/www/superclaw101 && unzip -o /tmp/dist.zip -d /var/www/superclaw101"
+# 将 dist/ 目录中的静态产物上传到目标环境
+# 具体命令请按实际部署环境调整，例如 rsync、scp、对象存储 CLI 或平台发布命令
 ```
 
 ## 🌐 访问
 
-| 协议 | 地址 |
-|------|------|
-| HTTP | http://superclaw.opencaio.cn |
-| HTTPS | https://superclaw.opencaio.cn |
+线上访问地址取决于实际部署环境、域名解析与 HTTPS 配置结果。
+只有在相关前提条件完成后，站点才会以正式域名对外提供访问。
 
-> ⚠️ 需要正确配置 DNS 解析到服务器 IP
+可在后续具备部署前提时，为站点配置正式访问域名与 HTTPS 地址。
 
 ## 📁 项目结构
 
@@ -131,19 +136,12 @@ description: 页面描述
 - ✅ 目录自动生成
 - ✅ 中英双语
 
-## 🔧 CI/CD 配置
+## 🔧 CI/CD 说明
 
-部署工作流见 [.github/workflows/deploy.yml](./.github/workflows/deploy.yml)
+仓库中可以维护用于构建与发布的工作流配置，但其是否可用取决于实际部署目标、访问凭据与环境准备情况。
+当前应将其理解为可演进的发布基础设施，而不是默认已经打通的线上交付链路。
 
-### 主要步骤
-
-1. **Checkout** - 检出代码
-2. **Setup Node.js** - 配置 Node 环境
-3. **Install** - 安装依赖
-4. **Build** - 构建静态站点
-5. **SCP Deploy** - 部署到服务器
-6. **SSL Config** - 配置 SSL 证书
-7. **Nginx Config** - 配置反向代理
+如需启用自动化发布，请结合实际目标环境补齐对应流程与密钥配置。
 
 ## 📄 License
 
