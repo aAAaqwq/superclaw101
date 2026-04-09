@@ -1,0 +1,354 @@
+---
+title: OpenClaw 实战经验
+description: 基于真实生产环境总结的 OpenClaw 使用经验与避坑指南
+---
+
+# OpenClaw 实战经验
+
+> 本页内容来自 Daniel 的 13 Agent AI 军团真实生产环境，基于 OpenClaw 官方文档和实际踩坑总结。
+
+---
+
+## 核心架构要点
+
+### Gateway 架构
+
+OpenClaw 的核心是一个 **Gateway 进程**，它：
+
+```
+消息渠道 (Telegram/飞书/Discord...)
+        ↓
+    Gateway (WebSocket:18789)
+        ↓
+    Agent (LLM API)
+        ↓
+    Tools (浏览器/文件/Shell...)
+```
+
+- Gateway 是唯一的连接中心，所有渠道都连接到同一个 Gateway
+- Gateway 与 Agent 之间通过 WebSocket 通信
+- Agent 有独立的工作空间 (workspace)，包含 AGENTS.md、SOUL.md、MEMORY.md
+
+### 关键设计决策
+
+| 决策 | 说明 |
+|------|------|
+| 一个 Gateway 一台机器 | WhatsApp 等渠道的 session 是单例的 |
+| 设备配对 (Pairing) | 所有客户端需要配对授权，支持 device-based pairing |
+| Per-sender Session | 默认每个发送者一个 session，隔离上下文 |
+| 多模型支持 | 通过 provider 配置支持 20+ 模型厂商 |
+
+---
+
+## 模型配置实战
+
+### ZAI/GLM 配置（推荐国内用户）
+
+```json5
+{
+  env: {
+    ANTHROPIC_AUTH_TOKEN: "your-zhipu-api-key",
+    ANTHROPIC_BASE_URL: "https://open.bigmodel.cn/api/anthropic",
+  },
+  agents: {
+    defaults: {
+      model: {
+        primary: "zai/glm-5",        // CEO/复杂推理
+        subagents: "zai/glm-4.7",    // 子 Agent 默认
+        // 或者用 haiku
+        thinkingModel: "zai/glm-5",  // 深度思考用最强模型
+      }
+    }
+  }
+}
+```
+
+**模型映射：**
+
+| Claude 模型 | GLM 模型 | 用途 | 价格 |
+|------------|---------|------|------|
+| opus | glm-5 | CEO/复杂决策 | 高（高峰期 3x） |
+| sonnet | glm-4.7 | 日常编码 | 中 |
+| haiku | glm-4.5-air | 高频扫描 | 低 |
+
+**高峰期注意：** GLM-5 高峰期（14:00-18:00 UTC+8）用量按 3 倍抵扣，普通任务用 sonnet/glm-4.7。
+
+### Anthropic 配置
+
+```json5
+{
+  env: {
+    ANTHROPIC_API_KEY: "sk-ant-...",
+  },
+  agents: {
+    defaults: {
+      model: {
+        primary: "claude-opus-4-6@shibacc/claude-opus-4-6",
+        subagents: "claude-sonnet-4-6@shibacc/claude-sonnet-4-6",
+      }
+    }
+  }
+}
+```
+
+### OpenAI 配置
+
+```json5
+{
+  env: {
+    OPENAI_API_KEY: "sk-...",
+  },
+  agents: {
+    defaults: {
+      model: {
+        primary: "gpt-4o",
+        subagents: "gpt-4o-mini",
+      }
+    }
+  }
+}
+```
+
+### 多模型 failover 配置
+
+```json5
+{
+  agents: {
+    defaults: {
+      model: {
+        primary: "claude-opus-4-6@shibacc/claude-opus-4-6",
+        fallbacks: [
+          "gpt-4o@openai/gpt-4o",
+          "glm-5@zai/glm-5",
+        ]
+      }
+    }
+  }
+}
+```
+
+---
+
+## 多 Agent 协作模式
+
+### 模式一：CEO 分发（推荐）
+
+```
+用户 → CEO 分析 → sessions_send 给各 Agent → Agent 执行 → CEO 汇总 → 回复
+```
+
+```json5
+{
+  agents: {
+    main: { model: "zai/glm-5", workspace: "~/agents/ceo" },
+    code: { model: "zai/glm-4.7", workspace: "~/agents/code" },
+    content: { model: "openai/gpt-4o", workspace: "~/agents/content" },
+    quant: { model: "shibacc/claude-haiku-4-5", workspace: "~/agents/quant" },
+  }
+}
+```
+
+### 模式二：Sub-Agent 并行
+
+```typescript
+// 在 CEO Agent 中
+await sessions_spawn({
+  task: "Research market trends for AI tools in China",
+  label: "market-research",
+  model: "shibacc/claude-haiku-4-5",
+})
+
+await sessions_spawn({
+  task: "Scan GitHub for OpenClaw-related projects",
+  label: "github-scan",
+  model: "shibacc/claude-haiku-4-5",
+})
+```
+
+### 模式三：定时 Cron 调度
+
+```bash
+openclaw cron add "0 9 * * *" --agent main --task "CEO 分发今日任务"
+openclaw cron add "0 */2 * * *" --agent code --task "检查 GitHub Issues"
+openclaw cron add "0 15 * * *" --agent content --task "生成每日内容"
+openclaw cron add "0 * * * *" --agent quant --task "扫描市场信号"
+```
+
+---
+
+## 实战教训
+
+### 🔑 密钥泄露（发生 3 次）
+
+> Agent 把 API Key 写进 MEMORY.md → 推送到 GitHub
+
+**解决：**
+- 永远不要在工作空间文件中存储密钥
+- 使用 `pass` 或环境变量
+- 在 AGENTS.md 中写明禁止规则
+
+```markdown
+# AGENTS.md
+## 不要做
+- 不要把 API Key 写进任何文件
+- 不要把密钥发到任何消息渠道
+```
+
+### 🤖 Agent 角色混乱
+
+> Code Agent 回答了营销问题，Content Agent 写了代码
+
+**解决：**
+- 在 AGENTS.md 中定义「不要做」部分
+- 用 `bindings` 限制路由
+
+```json5
+{
+  bindings: [
+    { agentId: "code", match: { channel: "telegram", account: "code_bot" } },
+    { agentId: "content", match: { channel: "telegram", account: "content_bot" } },
+  ]
+}
+```
+
+### 💰 模型成本控制
+
+| 角色 | 模型 | 日均 Token | 成本 |
+|------|------|-----------|------|
+| CEO | GLM-5 | 500K | ¥8-10 |
+| Code | GLM-4.7 | 300K | ¥3-4 |
+| Content | GPT-4o | 200K | ¥2-3 |
+| Quant | GLM-4-Air | 1M | ¥0.5 |
+| **合计** | | **2M** | **< ¥15/天** |
+
+**经验法则：** CEO 用最强模型，高频扫描 Agent 用最便宜的。
+
+---
+
+## Skill 开发经验
+
+### SKILL.md 最佳实践
+
+```markdown
+---
+name: content-scheduler
+description: 定时发布内容到多平台
+triggers:
+  - 发布内容
+  - schedule post
+  - 定时发
+---
+
+# Content Scheduler
+
+## 何时使用
+当用户要求在特定时间发布内容到社交平台时使用。
+
+## 工作流程
+1. 解析发布时间和平台
+2. 调用对应平台的 API
+3. 记录发布状态到 memory/YYYY-MM-DD.md
+
+## 示例
+- "明天上午9点发布到小红书" → 解析时间 + 平台
+- "每周五下午3点自动发周报" → 设置 cron
+
+## 错误处理
+- API 失败 → 重试 3 次，间隔 30 秒
+- 认证失效 → 通知用户重新授权
+```
+
+### 常用 Skill 分类
+
+| 类别 | 推荐 Skill | 来源 |
+|------|----------|------|
+| 编码 | coding-agent, github, docker | AGI-Super-Team |
+| 内容 | content-creator, humanizer, summarize | AGI-Super-Team |
+| 数据 | brave-search, web-fetch, pdf | OpenClaw 内置 |
+| 交易 | btc-5min-scalper, polymarket | AGI-Super-Team |
+| 平台 | feishu, telegram, discord | OpenClaw 内置 |
+
+---
+
+## 浏览器自动化经验
+
+### 稳定连接方案
+
+```typescript
+// 启动 Chrome 调试模式
+browser(action="start", profile="user")
+
+// 连接已有 Chrome
+browser(action="open", profile="user", url="https://example.com")
+```
+
+**关键参数：**
+- `--remote-debugging-port=9222` - 启用调试端口
+- `--user-data-dir` - 使用用户数据目录（不能用默认目录）
+
+### 常见问题
+
+| 问题 | 原因 | 解决 |
+|------|------|------|
+| 标签页不稳定 | Cloudflare 保护 | 先手动通过验证 |
+| 连接失败 | profile 目录锁定 | 关闭 Chrome 再重连 |
+| 页面加载慢 | 等待时间不够 | 增加 `timeoutMs` |
+
+---
+
+## 消息渠道配置
+
+### Telegram（最简单）
+
+```json5
+{
+  channels: {
+    telegram: {
+      botToken: "YOUR_BOT_TOKEN",
+      allowFrom: ["YOUR_USER_ID"],
+    }
+  }
+}
+```
+
+### 飞书（推荐企业用）
+
+```json5
+{
+  channels: {
+    feishu: {
+      appId: "cli_xxx",
+      appSecret: "xxx",
+      botName: "SuperClaw",
+    }
+  }
+}
+```
+
+---
+
+## 配置清单
+
+```bash
+# 1. 安装
+npm install -g openclaw
+
+# 2. 初始化
+openclaw init
+
+# 3. 配置模型（ZAI/GLM 为例）
+openclaw config set model '"zai/glm-5"' --json
+
+# 4. 连接渠道
+openclaw channels add
+
+# 5. 启动网关
+openclaw gateway
+
+# 6. 配对
+openclaw pairing list telegram
+openclaw pairing approve telegram <CODE>
+```
+
+→ [快速开始 →](/getting-started/)
+→ [打造 AI 军团 →](/tutorial/ai-army/)

@@ -42,6 +42,13 @@ export default defineConfig({
 					],
 				},
 				{
+					label: '💡 实战经验',
+					items: [
+						{ label: 'OpenClaw 实战经验', slug: 'experience' },
+						{ label: '模型配置完全指南', slug: 'experience/model-guide' },
+					],
+				},
+				{
 					label: '🔌 消息渠道',
 					items: [
 						{ label: '渠道架构总览', slug: 'guides/channels' },
