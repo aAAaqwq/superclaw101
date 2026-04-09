@@ -1,0 +1,100 @@
+---
+title: "模型配置常见问题"
+description: "Unknown model、API Key 错误、Provider 未配置等问题排查"
+---
+
+
+# 模型配置常见问题
+
+OpenClaw 支持多个 AI 模型提供商（Provider），包括 Claude、OpenAI、GLM 等。配置不当会导致各种报错，下面是最常见的问题和解决方案。
+
+## "Unknown model" 错误
+
+当你尝试使用某个模型时，系统返回 `Unknown model` 错误。这个错误通常有两个原因：
+
+**原因一：Provider 未配置**
+
+你指定了一个模型（比如 `claude-sonnet-4-6`），但对应的 Provider（Anthropic）没有在配置文件中启用。
+
+**原因二：API Key 未填入**
+
+Provider 已启用，但 API Key 没有正确写入 `.env` 文件或配置中。
+
+**排查步骤：**
+
+1. 运行 `openclaw models status` 查看所有 Provider 的连接状态
+2. 检查哪些 Provider 显示为 "disconnected" 或 "unconfigured"
+3. 确认对应的 API Key 已正确配置
+
+```bash
+# 检查模型状态
+openclaw models status
+
+# 测试特定模型
+openclaw models test claude-sonnet-4-6
+```
+
+## GLM 模型推荐用 ZAI（国内用户）
+
+对于国内用户，推荐使用 ZAI 作为 GLM 模型的 Provider。ZAI 的优势：
+
+- **国内支付友好**：支持支付宝、微信支付，不需要海外信用卡
+- **访问速度快**：服务器在国内，响应延迟更低
+- **配置简单**：Base URL 配置在 `~/.claude/settings.json` 中即可
+
+配置示例：
+
+```json
+{
+  "providers": {
+    "zai": {
+      "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+      "apiKey": "your-zai-api-key"
+    }
+  }
+}
+```
+
+将 `your-zai-api-key` 替换为你在智谱开放平台申请的 API Key。
+
+## Claude / OpenAI 模型推荐用 API Key 方式
+
+Claude 和 OpenAI 模型有两种接入方式：OAuth 登录和 API Key。推荐使用 API Key 方式，原因：
+
+- **更稳定**：不依赖 OAuth token 刷新，不会因为登录过期而中断
+- **更可控**：可以精确控制调用频率和额度
+- **更安全**：Key 只存储在本地，不会泄露到其他服务
+
+在 `.env` 文件中配置：
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-xxxxx
+OPENAI_API_KEY=sk-xxxxx
+```
+
+## 模型别名速查表
+
+OpenClaw 支持模型别名，让你用简短的名字调用模型：
+
+| 别名 | 完整模型名 | 适用场景 |
+|------|-----------|---------|
+| `opus` | `claude-opus-4-6` | 复杂推理、深度分析 |
+| `sonnet` | `claude-sonnet-4-6` | 日常任务、平衡性价比 |
+| `haiku` | `claude-haiku-4-5` | 高频调用、快速响应 |
+| `glm-5` | `glm-5` | 中文优化、国内用户首选 |
+| `glm-4.7` | `glm-4.7` | GLM 系列日常任务 |
+| `glm-4-air` | `glm-4-air` | 高频调用、低成本 |
+
+**Note:**
+使用别名可以让你在不同 Provider 之间切换时不用改代码。比如 `sonnet` 别名可以在 Anthropic 和其他兼容 Provider 之间自动路由。
+
+
+## 模型选择建议
+
+不同的任务应该使用不同级别的模型，这样可以在效果和成本之间取得平衡：
+
+- **复杂推理**（架构设计、代码审查）：用 Opus / GLM-5
+- **日常任务**（写作、问答、翻译）：用 Sonnet / GLM-4.7
+- **高频扫描**（监控、数据采集）：用 Haiku / GLM-4-Air
+
+通过合理分配模型，可以降低 60% 以上的 API 成本。

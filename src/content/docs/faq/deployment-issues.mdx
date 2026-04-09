@@ -1,0 +1,87 @@
+---
+title: "Cloudflare Pages 部署失败"
+description: "Wrangler fetch failed、Invalid commit message 等部署问题排查"
+---
+
+
+# Cloudflare Pages 部署失败
+
+部署 SuperClaw101 文档站到 Cloudflare Pages 时，你可能会遇到一些常见的错误。这些问题大多数跟网络环境、Git 配置或 Cloudflare 缓存机制有关，下面逐一排查。
+
+## Wrangler 报错 "fetch failed"
+
+这是部署过程中最常见的问题。当你运行 `npx wrangler pages deploy` 时，终端突然抛出 `fetch failed` 错误。
+
+**Note:**
+**根本原因：** 这不是你的代码问题，而是网络抖动导致的。Cloudflare 的 API 端点在国内网络环境下偶尔会出现连接超时。
+
+
+**解决方案：**
+
+1. 等待 3-5 秒后直接重试，大多数情况下第二次就能成功
+2. 避开网络高峰期（14:00-18:00 CST），这个时间段 Cloudflare API 响应最不稳定
+3. 如果多次重试仍然失败，检查你的网络代理设置，确保能正常访问 Cloudflare API
+4. 可以尝试加上 `--commit-dirty=true` 参数跳过一些检查步骤
+
+推荐在晚间（20:00 以后）进行部署操作，网络通常更稳定。
+
+## "Invalid commit message, it must be a valid UTF-8 string"
+
+这个错误看起来很奇怪——你明明没有写什么奇怪的 commit message。实际上这是因为 Git 没有配置用户信息，导致 Wrangler 在生成 commit message 时使用了空值或非 UTF-8 字符。
+
+**解决方案：**
+
+在项目目录下运行以下命令配置 Git 用户信息：
+
+```bash
+git config user.email "daniel@superclaw.ai"
+git config user.name "Daniel"
+```
+
+如果你希望全局生效（所有项目都使用这个配置），加上 `--global` 参数：
+
+```bash
+git config --global user.email "daniel@superclaw.ai"
+git config --global user.name "Daniel"
+```
+
+配置完成后重新执行部署命令即可。
+
+## 部署成功但 URL 不更新
+
+有时候 `wrangler pages deploy` 显示成功，但你访问网站发现内容还是旧的。别慌，这不是部署失败了。
+
+Cloudflare Pages 有缓存机制，部署完成后需要 1-2 分钟才能在全球节点生效。你可以：
+
+1. 用无痕模式打开网址，避免浏览器本地缓存干扰
+2. 强制刷新页面（`Ctrl + Shift + R` 或 `Cmd + Shift + R`）
+3. 在 Cloudflare Dashboard 里手动清除缓存（Purge Cache）
+4. 等待 2 分钟后再访问
+
+如果你使用了自定义域名，DNS 传播可能还需要额外的时间。
+
+## wrangler pages deploy 一直卡在 207 状态
+
+状态码 207（Multi-Status）看起来像个错误，但实际上文件已经全部上传成功了。这个状态只是表示 Wrangler 在检查部署冲突时卡住了。
+
+**解决方案：**
+
+直接 `Ctrl + C` 中断当前命令，然后重新运行部署命令。第二次运行时，因为文件已经上传，部署会更快完成。
+
+如果反复卡在 207，可以尝试：
+
+```bash
+npx wrangler pages deploy ./dist --project-name=your-project --branch=main
+```
+
+显式指定项目名和分支名，减少 Wrangler 的自动推断环节。
+
+## 部署前检查清单
+
+每次部署前快速过一遍，能避免 90% 的问题：
+
+- [ ] Git 用户信息已配置（`git config user.name`）
+- [ ] 本地构建成功（`npm run build` 或 `pnpm build`）
+- [ ] 网络连接正常，能访问 Cloudflare
+- [ ] 不在网络高峰期（避开 14:00-18:00）
+- [ ] dist 目录存在且包含最新内容

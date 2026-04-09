@@ -1,0 +1,124 @@
+---
+title: "案例排序与侧边栏问题"
+description: "案例#编号错误、下拉框重复、侧边栏配置问题"
+---
+
+
+# 案例排序与侧边栏问题
+
+SuperClaw101 文档站使用 Starlight 的侧边栏配置来管理导航。案例（Cases）模块的排序和显示问题是最常见的配置困扰，下面逐个解决。
+
+## 案例编号显示错误
+
+你可能发现案例的编号（#1、#2、#3...）跟实际顺序对不上。这是因为 Starlight 使用文件名的字母排序作为默认顺序，而不是你期望的逻辑顺序。
+
+**解决方案：手动指定侧边栏 items**
+
+不要使用 `autogenerate` 自动生成案例列表，而是手动编写 `items` 数组：
+
+```js
+// src/content/config.ts 中的侧边栏配置
+sidebar: [
+  {
+    label: '案例',
+    items: [
+      'cases/build-ai-chatbot',        // #1
+      'cases/automate-social-media',   // #2
+      'cases/code-review-agent',       // #3
+      'cases/data-analysis-dashboard', // #4
+    ],
+  },
+]
+```
+
+手动编写的 `items` 会严格按你在数组中的书写顺序显示，案例编号也会从 #1 开始依次递增。
+
+## 删除多余的下拉框 / 重复分组
+
+使用 `autogenerate` 时，Starlight 会按目录自动创建分组，这可能导致出现重复的下拉框或不需要的分组。
+
+**解决方案：用显式列表替代 autogenerate**
+
+把这种配置：
+
+```js
+// ❌ 自动生成，不可控
+items: [
+  { autogenerate: { directory: 'cases' } }
+]
+```
+
+改为：
+
+```js
+// ✅ 手动指定，完全可控
+items: [
+  'cases/build-ai-chatbot',
+  'cases/automate-social-media',
+  'cases/code-review-agent',
+]
+```
+
+**Note:**
+使用 `autogenerate` 时，新增的案例文件会自动出现在侧边栏中，但顺序不可控。手动列表则需要每次新增案例后同步更新侧边栏配置。
+
+
+## 新增案例后侧边栏不更新
+
+如果你使用手动 `items` 列表（推荐），新增案例后需要同时更新侧边栏配置，否则新案例不会出现在导航中。
+
+
+
+### 1. 创建案例 MDX 文件
+
+在 `src/content/docs/cases/` 下创建新的 `.mdx` 文件，包含完整的 frontmatter。
+
+### 2. 更新侧边栏配置
+
+打开侧边栏配置文件，在对应的 `items` 数组末尾添加新案例的 slug：
+
+```js
+items: [
+  'cases/build-ai-chatbot',
+  'cases/automate-social-media',
+  // 添加新案例
+  'cases/your-new-case',
+]
+```
+
+### 3. 验证排序
+
+启动本地开发服务器 (`pnpm dev`)，检查侧边栏中案例的显示顺序和编号是否正确。
+
+
+
+## 经验手册加入侧边栏
+
+经验手册（Experience）类文档也可以加入侧边栏。添加时使用 slug 格式：
+
+```js
+sidebar: [
+  {
+    label: '经验手册',
+    items: [
+      'experience/openclaw-architecture',
+      'experience/model-selection-guide',
+      'experience/troubleshooting-diary',
+    ],
+  },
+]
+```
+
+slug 格式对应文件路径：`src/content/docs/experience/openclaw-architecture.mdx`。
+
+## 侧边栏配置最佳实践
+
+根据实际踩坑经验，总结几条最佳实践：
+
+1. **永远用手动列表**：不要用 `autogenerate`，虽然省事但不可控
+2. **按逻辑顺序排列**：把入门案例放在前面，进阶案例放在后面
+3. **同步更新**：新增/删除案例后立即更新侧边栏配置
+4. **分组清晰**：用 `label` 给每个分组起一个清晰的中文名称
+5. **本地验证**：每次修改配置后在本地预览确认，再推送到线上
+
+遵循这些实践，你的文档站侧边栏就能保持整洁有序。

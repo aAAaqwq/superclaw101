@@ -1,0 +1,134 @@
+---
+title: "网络与 Cloudflare API 问题"
+description: "fetch failed、API 请求失败、网络不稳定的应对策略"
+---
+
+
+# 网络与 Cloudflare API 问题
+
+在国内网络环境下使用 Cloudflare 服务，网络问题是最大的挑战。本文汇总了常见的网络故障和经过验证的应对策略。
+
+## Cloudflare API 请求失败
+
+当你调用 Cloudflare API（无论是通过 Wrangler、Dashboard 还是直接 HTTP 请求）时，偶尔会遇到请求失败或超时。
+
+**Note:**
+**核心原则：** Cloudflare 的服务本身是稳定的，99% 的"失败"都是网络中间环节的问题。不要怀疑 Cloudflare 挂了，先检查你的网络。
+
+
+**快速诊断：**
+
+```bash
+# 测试能否访问 Cloudflare API
+curl -I https://api.cloudflare.com/client/v4/
+
+# 测试 DNS 解析
+nslookup api.cloudflare.com
+
+# 测试 Wrangler 连接
+npx wrangler whoami
+```
+
+如果 `curl` 返回超时或连接被重置，说明是网络层面的问题。
+
+## 高峰期 API 不稳定
+
+每天 14:00-18:00（CST）是国内网络到 Cloudflare 连接最不稳定的时间段。这是因为：
+
+- 跨境网络带宽在下午达到峰值
+- 国际出口线路拥塞
+- 部分运营商在这个时段有流量管控
+
+**应对策略：**
+
+1. **避开高峰期部署**：把部署操作安排在 20:00 以后或上午
+2. **提前准备**：在上午完成代码修改和测试，晚间统一部署
+3. **批量操作**：把多次小部署合并为一次大部署，减少网络请求次数
+
+## Wrangler 一直 fetch failed
+
+如果 Wrangler 持续报 `fetch failed`，不只是偶尔一次，可能是以下原因：
+
+**原因一：代理配置问题**
+
+检查你的网络代理是否正确配置：
+
+```bash
+# 查看当前代理设置
+echo $HTTP_PROXY
+echo $HTTPS_PROXY
+
+# 如果代理不正确，临时取消
+unset HTTP_PROXY HTTPS_PROXY
+
+# 或者显式设置正确的代理
+export HTTPS_PROXY=http://your-proxy:port
+```
+
+**原因二：DNS 污染**
+
+某些网络环境下 Cloudflare 的域名可能被 DNS 污染：
+
+```bash
+# 尝试使用公共 DNS
+nslookup api.cloudflare.com 8.8.8.8
+nslookup api.cloudflare.com 1.1.1.1
+```
+
+**原因三：Wrangler 版本过旧**
+
+```bash
+# 更新到最新版本
+npm install wrangler@latest -g
+
+# 验证版本
+npx wrangler --version
+```
+
+## GitHub push 失败
+
+部署流程中经常需要 `git push` 来触发 CI/CD，如果 push 失败会影响整个部署链路。
+
+**常见原因：**
+
+1. **SSH key 过期**：长时间未使用，SSH key 可能被 GitHub 吊销
+2. **Token 过期**：如果用 HTTPS + token 方式，token 有过期时间
+3. **网络问题**：跟 Cloudflare 一样，GitHub 的 SSH 端口也可能被干扰
+
+**诊断和修复：**
+
+```bash
+# 测试 SSH 连接
+ssh -T git@github.com
+
+# 如果失败，重新生成 SSH key
+ssh-keygen -t ed25519 -C "daniel@superclaw.ai"
+# 然后把公钥添加到 GitHub Settings > SSH Keys
+
+# 测试 push
+git push origin main --dry-run
+```
+
+## 万能重试策略
+
+大多数网络问题都可以通过"等一等再试"解决。这里给出一个经过验证的重试策略：
+
+1. **第一次失败**：等 3-5 秒，直接重试
+2. **第二次失败**：等 30 秒-1 分钟，检查网络代理设置
+3. **第三次失败**：切换时间段（如果是在高峰期），改到晚间再试
+4. **持续失败**：检查是否有防火墙/VPN 规则阻止了 Cloudflare 域名
+
+**Note:**
+**一键部署脚本建议：** 可以把部署命令包装成一个带自动重试的脚本，最多重试 3 次，每次间隔 5 秒。这样大部分网络抖动都能自动恢复。
+
+
+```bash
+# 简单的重试脚本示例
+for i in 1 2 3; do
+  npx wrangler pages deploy ./dist --project-name=superclaw101 && break
+  echo "第 $i 次尝试失败，5秒后重试..."
+  sleep 5
+done
+```
+
+记住：网络问题不要硬扛，换个时间再来往往比反复调试更高效。

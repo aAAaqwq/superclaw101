@@ -1,0 +1,150 @@
+---
+title: "Skill 开发与 AGI-Super-Team"
+description: "447+ Skills 生态、Skill 编写规范、发布流程"
+---
+
+
+# Skill 开发与 AGI-Super-Team
+
+OpenClaw 的核心扩展机制是 **Skill**——一段结构化的指令文件，告诉 AI Agent 如何完成特定任务。AGI-Super-Team 已经积累了 447+ Skills 和 13 个专业 Agent，形成了强大的能力生态。
+
+## 什么是 Skill
+
+Skill 本质上是一个 `SKILL.md` 文件，包含：
+
+- **描述（description）**：这个 Skill 做什么
+- **触发短语（trigger phrase）**：用户说什么话会触发这个 Skill
+- **逐步指令（step-by-step instructions）**：AI 应该怎么执行
+
+它不需要写代码，不需要编译，就是纯文本的"操作手册"。这也意味着任何人都可以编写 Skill，门槛极低。
+
+## Skill 生态概览
+
+AGI-Super-Team 目前包含：
+
+- **13 个专业 Agent**：覆盖开发、运维、内容、设计、数据等领域
+- **447+ Skills**：持续更新，社区贡献
+- **多平台支持**：小红书、抖音、微信公众号、掘金、知识星球等
+- **行业覆盖**：自媒体运营、量化交易、软件开发、市场分析
+
+## 安装 Skill
+
+
+
+### 搜索 Skill
+
+```bash
+npx skills find "关键词"
+```
+
+例如搜索内容创作相关的 Skill：
+
+```bash
+npx skills find "content creation"
+npx skills find "小红书"
+npx skills find "量化交易"
+```
+
+### 安装 Skill
+
+```bash
+npx skills add owner/repo@skill -g -y
+```
+
+参数说明：
+- `owner/repo`：Skill 所在的 GitHub 仓库
+- `@skill`：Skill 的名称
+- `-g`：全局安装（所有项目可用）
+- `-y`：自动确认
+
+### 验证安装
+
+安装完成后，Skill 会出现在 `~/.openclaw/skills/<name>/SKILL.md`。你可以直接在对话中使用触发短语来调用它。
+
+
+
+## Skill 本地化：不被 Upstream 覆盖
+
+如果你对某个已安装的 Skill 做了自定义修改，不想被上游更新覆盖，把它放到本地目录：
+
+```
+~/.openclaw/skills/<your-skill-name>/SKILL.md
+```
+
+放在这个路径下的 Skill 优先级更高，不会被 `npx skills add` 命令覆盖。
+
+## 编写自己的 Skill
+
+编写 Skill 只需要创建一个 `SKILL.md` 文件，遵循以下结构：
+
+```markdown
+---
+description: "简短描述这个 Skill 做什么"
+triggers:
+  - "触发短语1"
+  - "触发短语2"
+---
+
+# Skill 名称
+
+## 何时使用
+描述什么场景下应该使用这个 Skill。
+
+## 执行步骤
+
+1. 第一步：做什么
+2. 第二步：做什么
+3. 第三步：做什么
+
+## 输出格式
+描述期望的输出格式。
+
+## 注意事项
+列出常见的坑和注意事项。
+```
+
+**Note:**
+**编写 Skill 的关键：** 把你自己当成一个完全不懂这个任务的人，写出足够详细的步骤。好的 Skill 是"傻瓜式"的——任何人拿到都能执行。
+
+
+## 按场景推荐 Skill 组合
+
+不同的工作场景适合不同的 Skill 组合。以下是一些经过验证的推荐配置：
+
+### 自媒体运营
+
+- `content-creator`：内容创作核心
+- `social-media-poster`：多平台发布
+- `xhs-smart-publisher`：小红书智能发布
+- `content-cover-gen`：封面图生成
+
+### 量化交易
+
+- `btc-5min-scalper`：BTC 短线策略
+- `data-analysis`：数据分析
+- `api-gateway`：行情数据接入
+
+### 软件开发
+
+- `coding-agent`：代码开发
+- `github`：Git 操作
+- `code-review-quality`：代码审查
+- `systematic-debugging`：系统化调试
+
+### 内容营销
+
+- `copywriting`：文案撰写
+- `humanizer`：反 AI 味文案重构
+- `poster-design-generation`：海报设计
+- `video-marketing`：视频营销
+
+## 发布你的 Skill
+
+当你编写了一个有用的 Skill，可以通过以下方式分享给社区：
+
+1. 把 Skill 放在 GitHub 仓库中
+2. 确保目录结构正确：`<skill-name>/SKILL.md`
+3. 在 README 中描述 Skill 的功能和使用方法
+4. 提交到 skills.sh 或 OpenClaw 官方仓库
+
+好的 Skill 会被社区广泛使用和改进，形成正循环。
