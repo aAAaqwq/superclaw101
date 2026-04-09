@@ -7,6 +7,22 @@ description: "浏览、搜索、安装来自 AGI-Super-Team 生态的 Skills"
 
 > [AGI-Super-Team](https://github.com/aAAaqwq/AGI-Super-Team) — **447+ Skills · 13 个 Agent · 每周更新**
 
+### 核心数据
+
+- 🧩 **447+** 即插即用 Skills
+- 🤖 **13** 专业 Agent
+- 📂 **12** 能力分类
+- ⭐ **每周** 持续更新
+
+### 安装命令
+
+```bash
+npx skills find "关键词"                # 搜索 Skills
+npx skills add owner/repo@skill -g -y   # 安装 Skill
+npx skills list                          # 查看已安装
+npx skills update                       # 更新全部
+```
+
 ## 快速安装
 
 ```bash
@@ -14,6 +30,26 @@ npx skills find "content creator"
 npx skills add aAAaqwq/AGI-Super-Team@content-creator -g -y
 npx skills list
 npx skills update
+```
+
+### 按场景安装
+
+**自媒体运营：**
+```bash
+npx skills add aAAaqwq/AGI-Super-Team@content-creator -g -y
+npx skills add aAAaqwq/AGI-Super-Team@social-media-poster -g -y
+```
+
+**开发工具：**
+```bash
+npx skills add aAAaqwq/AGI-Super-Team@coding-agent -g -y
+npx skills add aAAaqwq/AGI-Super-Team@github -g -y
+```
+
+**量化交易：**
+```bash
+npx skills add aAAaqwq/AGI-Super-Team@btc-5min-scalper -g -y
+npx skills add aAAaqwq/AGI-Super-Team@polymarket-profit -g -y
 ```
 
 ## 分类导航
@@ -32,6 +68,8 @@ npx skills update
 | [🧠 AI & ML](/skillshub/ai-ml/) | ~15 | ML 工程、Prompt 优化、推理 |
 | [📋 项目管理](/skillshub/project-management/) | ~15 | Scrum、Jira、Asana、规划、跟踪 |
 | [⚖️ 法务合规](/skillshub/legal-compliance/) | ~10 | 合同、GDPR、PCI、法律审查 |
+
+[查看详情 →](/skillshub/)
 
 ## 贡献 Skill
 

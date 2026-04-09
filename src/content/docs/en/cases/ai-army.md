@@ -17,6 +17,17 @@ CEO Agent 统一调度 12 个专业 Agent，覆盖工程、市场、数据、财
 - **5-8x** 开发速度提升
 - **< ¥15/天** API 成本
 
+## Model Cost Economics
+
+| Role | Model | Rationale |
+|------|-------|-----------|
+| CEO | claude-opus / GLM-5 | Strategic decisions require the strongest reasoning |
+| Daily Coding | claude-sonnet / GLM-4.7 | Best cost-performance ratio |
+| Content Creation | gpt-4o / Kimi | Excellent creative expression |
+| High-Frequency Scanning | haiku / GLM-4-Air | Extremely low cost |
+
+**Rule of Thumb:** Use the best model for the CEO, and the cheapest for high-frequency Agents. Daily API cost target: < ¥15.
+
 ## 使用 Skill
 `ceo-loop` · `team-orchestration` · `coding-agent` · `content-creator` · `polymarket-profit`
 

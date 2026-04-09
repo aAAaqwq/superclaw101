@@ -46,6 +46,9 @@ export default defineConfig({
 					items: [
 						{ label: 'OpenClaw 实战经验', slug: 'experience' },
 						{ label: '模型配置完全指南', slug: 'experience/model-guide' },
+						{ label: '📖 架构学习手册', slug: 'experience/openclaw-architecture' },
+						{ label: '🚀 基座进化手册', slug: 'experience/openclaw-evolution' },
+						{ label: '📝 自媒体运营手册', slug: 'experience/self-media-operations' },
 					],
 				},
 				{
@@ -81,7 +84,32 @@ export default defineConfig({
 				},
 				{
 					label: '🏆 案例展示',
-					autogenerate: { directory: 'cases' },
+					items: [
+						{ label: '案例#1: AGI-Super-Team 生态', slug: 'cases/agi-super-team' },
+						{ label: '案例#2: 13 Agent AI 军团', slug: 'cases/ai-army' },
+						{ label: '案例#3: 多平台内容工厂', slug: 'cases/content-factory' },
+						{ label: '案例#4: OpenClaw 审计系统', slug: 'cases/openclaw-audit' },
+						{ label: '案例#5: SuperClaw101 网站', slug: 'cases/superclaw101' },
+						{ label: '案例#6: Polymarket 量化交易', slug: 'cases/quant-trading' },
+						{ label: '案例#7: BTC 5min 网格策略', slug: 'cases/btc-scalper' },
+						{ label: '案例#8: 合成市场研究', slug: 'cases/synthetic-market-research' },
+						{ label: '案例#9: AI 视频生成工厂', slug: 'cases/video-factory' },
+						{ label: '案例#10: KGKB 知识图谱', slug: 'cases/kgkb' },
+						{ label: '案例#11: 企微智能客服', slug: 'cases/wecom-bot' },
+						{ label: '案例#12: 跨实例协作', slug: 'cases/cross-instance' },
+						{ label: '案例#13: 内容流水线 SOP', slug: 'cases/media-sop' },
+						{ label: '案例#14: QMD 统一知识库', slug: 'cases/qmd-kb' },
+						{ label: '案例#15: 夜间工厂模式', slug: 'cases/night-factory' },
+						{ label: '案例#16: Skill 编写与发布', slug: 'cases/skill-authoring' },
+					],
+				},
+				{
+					label: '💡 技巧页面',
+					items: [
+						{ label: '去除 AI 写作痕迹', slug: 'tips/ai-writing-quality' },
+						{ label: '浏览器自动化', slug: 'tips/browser-automation' },
+						{ label: 'OpenClaw 高级配置', slug: 'tips/openclaw-advanced-config' },
+					],
 				},
 				{
 					label: '❓ 常见问题',

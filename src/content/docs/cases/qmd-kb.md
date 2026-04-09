@@ -19,5 +19,15 @@ description: "9,766 篇文档 + 49,675 个向量 —— 全量语义检索"
 - 替代了 Notion + Obsidian + 书签
 - 知识复用率：5% → **40%**
 
+## 检索示例
+
+| 查询 | Top-1 结果 |
+|------|-----------|
+| "如何配置 GLM 模型" | OpenClaw 模型配置指南 |
+| "Telegram 接入问题" | 渠道故障排查 |
+| "夜间工厂模式" | 案例：夜间工厂 |
+
+检索延迟 < 200ms，准确率 85%+。
+
 ## 使用 Skill
 `openclaw-memory-enhancer` · `summarize` · `content-research-writer`
